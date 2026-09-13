@@ -1,0 +1,40 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { url, photoSrc } from '../../lib/site';
+import { formatDate } from '../../lib/dates';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('socials');
+  return entries.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const description = entry.data.caption || entry.data.alt;
+---
+
+<Base title={entry.data.title} description={description}>
+  <a class="back" href={url('socials/')}>Socials / Contact</a>
+  <article class="photo-stage meme-stage">
+    <div class="frame">
+      <img
+        src={photoSrc(entry.data.image)}
+        alt={entry.data.alt}
+      />
+    </div>
+    <div class="photo-meta">
+      <h1>{entry.data.title}</h1>
+      <p class="when">
+        <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
+      </p>
+      {entry.data.caption && <p class="caption">{entry.data.caption}</p>}
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </article>
+</Base>

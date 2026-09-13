@@ -1,0 +1,83 @@
+---
+import '@fontsource/cormorant-garamond/500.css';
+import '@fontsource/cormorant-garamond/600.css';
+import '@fontsource/cormorant-garamond/700.css';
+import '@fontsource-variable/inter/wght.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { siteName, url } from '../lib/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  flush?: boolean;
+}
+
+const {
+  title,
+  description = 'Pictures, notes, and an archive — Jakob Musk.',
+  ogImage,
+  flush = false,
+} = Astro.props;
+
+const pageTitle = title ? `${title} — ${siteName}` : siteName;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = ogImage
+  ? new URL(ogImage, Astro.site)
+  : new URL(url('og.jpg'), Astro.site);
+
+const base = import.meta.env.BASE_URL || '/';
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const homePath = base.replace(/\/+$/, '') || '/';
+const isHome = path === homePath || path === '' || path === '/';
+
+const bodyClass = [isHome && 'is-home', flush && 'is-flush'].filter(Boolean).join(' ') || undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="color-scheme" content="dark light" />
+    <script is:inline>
+      try {
+        var t = localStorage.getItem('theme');
+        if (t !== 'light' && t !== 'dark') t = 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', t === 'light' ? '#ffffff' : '#0a0a0a');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    </script>
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={siteName} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <meta property="og:title" content={siteName} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={siteName} />
+    <meta name="twitter:description" content={description} />
+  </head>
+  <body class={bodyClass}>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="site">
+      <Header />
+      <main id="content">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+  </body>
+</html>

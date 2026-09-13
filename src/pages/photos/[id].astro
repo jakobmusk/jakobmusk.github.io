@@ -1,0 +1,40 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { url, photoSrc } from '../../lib/site';
+import { formatDate } from '../../lib/dates';
+
+export async function getStaticPaths() {
+  const photos = await getCollection('photos');
+  return photos.map((photo) => ({
+    params: { id: photo.id },
+    props: { photo },
+  }));
+}
+
+const { photo } = Astro.props;
+const { Content } = await render(photo);
+---
+
+<Base title={photo.data.title} description={photo.data.caption}>
+  <a class="back" href={url('photos/')}>Images</a>
+  <article class="photo-stage">
+    <div class="frame">
+      <img
+        src={photoSrc(photo.data.image)}
+        alt={photo.data.alt}
+      />
+    </div>
+    <div class="photo-meta">
+      <h1>{photo.data.title}</h1>
+      <p class="when">
+        <time datetime={photo.data.date.toISOString()}>{formatDate(photo.data.date)}</time>
+        · {photo.data.album}
+      </p>
+      <p class="caption">{photo.data.caption}</p>
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </article>
+</Base>

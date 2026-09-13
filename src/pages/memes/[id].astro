@@ -1,0 +1,40 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { url, photoSrc } from '../../lib/site';
+import { formatDate } from '../../lib/dates';
+
+export async function getStaticPaths() {
+  const memes = await getCollection('memes');
+  return memes.map((meme) => ({
+    params: { id: meme.id },
+    props: { meme },
+  }));
+}
+
+const { meme } = Astro.props;
+const { Content } = await render(meme);
+const description = meme.data.caption || meme.data.alt;
+---
+
+<Base title={meme.data.title} description={description}>
+  <a class="back" href={url('memes/')}>Memes</a>
+  <article class="photo-stage meme-stage">
+    <div class="frame">
+      <img
+        src={photoSrc(meme.data.image)}
+        alt={meme.data.alt}
+      />
+    </div>
+    <div class="photo-meta">
+      <h1>{meme.data.title}</h1>
+      <p class="when">
+        <time datetime={meme.data.date.toISOString()}>{formatDate(meme.data.date)}</time>
+      </p>
+      {meme.data.caption && <p class="caption">{meme.data.caption}</p>}
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </article>
+</Base>

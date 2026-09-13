@@ -1,0 +1,157 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Md from '../../components/Md.astro';
+import { url, photoSrc } from '../../lib/site';
+import { formatDate } from '../../lib/dates';
+
+const photos = await getCollection('photos');
+const notes = await getCollection('writing');
+const memes = await getCollection('memes');
+const misc = await getCollection('archive');
+
+type Row = {
+  id: string;
+  date: Date;
+  title: string;
+  type: 'photo' | 'note' | 'meme' | 'misc';
+  kindLabel: string;
+  href?: string;
+  excerpt?: string;
+  image?: string;
+  alt?: string;
+  rendered?: Awaited<ReturnType<typeof render>>['Content'];
+  external?: string;
+};
+
+const rows: Row[] = [];
+
+for (const p of photos) {
+  rows.push({
+    id: `photo-${p.id}`,
+    date: p.data.date,
+    title: p.data.title,
+    type: 'photo',
+    kindLabel: 'Photo',
+    href: url(`photos/${p.id}/`),
+    excerpt: p.data.caption,
+    image: p.data.image,
+    alt: p.data.alt,
+  });
+}
+
+for (const n of notes) {
+  rows.push({
+    id: `note-${n.id}`,
+    date: n.data.date,
+    title: n.data.title,
+    type: 'note',
+    kindLabel: 'Note',
+    href: url(`writing/${n.id}/`),
+    excerpt: n.data.excerpt,
+  });
+}
+
+for (const m of memes) {
+  rows.push({
+    id: `meme-${m.id}`,
+    date: m.data.date,
+    title: m.data.title,
+    type: 'meme',
+    kindLabel: 'Meme',
+    href: url(`memes/${m.id}/`),
+    excerpt: m.data.caption || undefined,
+    image: m.data.image,
+    alt: m.data.alt,
+  });
+}
+
+for (const m of misc) {
+  const { Content } = await render(m);
+  rows.push({
+    id: `misc-${m.id}`,
+    date: m.data.date,
+    title: m.data.title,
+    type: 'misc',
+    kindLabel: m.data.kind === 'link' ? 'Link' : m.data.kind === 'list' ? 'List' : m.data.kind === 'fragment' ? 'Fragment' : 'Note',
+    excerpt: undefined,
+    rendered: Content,
+    external: m.data.url,
+  });
+}
+
+rows.sort((a, b) => b.date.getTime() - a.date.getTime());
+---
+
+<Base title="Archive" description="Everything in one place — photos, notes, memes, and miscellaneous things.">
+  <div class="wrap">
+    <p class="page-kicker">Archive</p>
+    <h1 class="page-title">The whole pile</h1>
+    <p class="page-lead">
+      Images, notes, memes, links, lists, fragments — chronological, uncurated on
+      purpose. Filter if you want to.
+    </p>
+
+    <div class="filters" data-filter-group="archive">
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="photo" aria-pressed="false">Images</button>
+      <button type="button" data-filter="note" aria-pressed="false">Notes</button>
+      <button type="button" data-filter="meme" aria-pressed="false">Memes</button>
+      <button type="button" data-filter="misc" aria-pressed="false">Miscellaneous</button>
+    </div>
+
+    <ol class="archive-list">
+      {
+        rows.map((row) => (
+          <li class="archive-item" data-type={row.type}>
+            <time datetime={row.date.toISOString()}>{formatDate(row.date)}</time>
+            <span class="kind">{row.kindLabel}</span>
+            <div>
+              <h2>
+                {row.href ? (
+                  <a href={row.href}>{row.title}</a>
+                ) : row.external ? (
+                  <a href={row.external} rel="noopener noreferrer">{row.title}</a>
+                ) : (
+                  row.title
+                )}
+              </h2>
+              {row.excerpt && <div class="body"><p>{row.excerpt}</p></div>}
+              {row.rendered && (
+                <div class="body">
+                  <Md Content={row.rendered} />
+                </div>
+              )}
+              {row.image && (
+                <a href={row.href} class="archive-thumb">
+                  <img src={photoSrc(row.image)} alt={row.alt || ''} loading="lazy" />
+                </a>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</Base>
+
+<script is:inline>
+  (function () {
+    const group = document.querySelector('[data-filter-group="archive"]');
+    if (!group) return;
+    const buttons = group.querySelectorAll('button[data-filter]');
+    const items = document.querySelectorAll('.archive-item[data-type]');
+    group.addEventListener('click', function (event) {
+      const btn = event.target.closest('button[data-filter]');
+      if (!btn) return;
+      const value = btn.getAttribute('data-filter');
+      buttons.forEach(function (b) {
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      });
+      items.forEach(function (el) {
+        const show = value === 'all' || el.getAttribute('data-type') === value;
+        el.classList.toggle('is-hidden', !show);
+      });
+    });
+  })();
+</script>

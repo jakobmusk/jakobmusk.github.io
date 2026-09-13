@@ -1,0 +1,169 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { url, photoSrc } from '../lib/site';
+import { probeImage } from '../lib/image-size';
+
+interface Props {
+  photos: CollectionEntry<'photos'>[];
+  eager?: number;
+}
+
+const { photos, eager = 0 } = Astro.props;
+---
+
+<div class="mosaic" data-mosaic>
+  {
+    photos.map((photo, i) => {
+      const dim = probeImage(photo.data.image);
+      const ar = dim.width / dim.height;
+      return (
+        <a
+          href={url(`photos/${photo.id}/`)}
+          data-album={photo.data.album}
+          data-w={dim.width}
+          data-h={dim.height}
+          style={`--ar: ${ar}`}
+        >
+          <img
+            src={photoSrc(photo.data.image)}
+            alt={photo.data.alt}
+            width={dim.width}
+            height={dim.height}
+            loading={i < eager ? 'eager' : 'lazy'}
+            fetchpriority={i === 0 && eager > 0 ? 'high' : 'auto'}
+          />
+        </a>
+      );
+    })
+  }
+</div>
+
+<script is:inline>
+  (function () {
+    var GAP = 4;
+    var PACK_MQ = 880;
+    var PACK_MQ_2 = 540;
+
+    function columns() {
+      var w = window.innerWidth;
+      if (w >= PACK_MQ) return 4;
+      if (w >= PACK_MQ_2) return 2;
+      return 1;
+    }
+
+    function aspect(el) {
+      var w = parseFloat(el.getAttribute('data-w') || '');
+      var h = parseFloat(el.getAttribute('data-h') || '');
+      if (w > 0 && h > 0) return w / h;
+      var img = el.querySelector('img');
+      if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
+        el.setAttribute('data-w', String(img.naturalWidth));
+        el.setAttribute('data-h', String(img.naturalHeight));
+        return img.naturalWidth / img.naturalHeight;
+      }
+      return 1.5;
+    }
+
+    function pack(root) {
+      var mosaic = root || document.querySelector('[data-mosaic]');
+      if (!mosaic) return;
+      var items = [];
+      var children = mosaic.children;
+      for (var i = 0; i < children.length; i++) {
+        var node = children[i];
+        if (node.tagName !== 'A') continue;
+        if (node.classList.contains('is-hidden')) {
+          node.style.width = '';
+          node.style.height = '';
+          continue;
+        }
+        items.push(node);
+      }
+      var totalW = mosaic.clientWidth;
+      if (totalW <= 0) return;
+      var cols = columns();
+      var n = items.length;
+
+      for (var start = 0; start < n; start += cols) {
+        var row = items.slice(start, start + cols);
+        var ars = row.map(aspect);
+        var sum = 0;
+        for (var k = 0; k < ars.length; k++) sum += ars[k];
+        var leftover = row.length < cols;
+        var h;
+        if (leftover) {
+          var fullAvail = totalW - GAP * (cols - 1);
+          var avg = sum / row.length;
+          h = fullAvail / (sum + avg * (cols - row.length));
+        } else {
+          var avail = totalW - GAP * (row.length - 1);
+          h = avail / sum;
+        }
+        var used = 0;
+        for (var j = 0; j < row.length; j++) {
+          var w;
+          if (!leftover && j === row.length - 1) {
+            w = totalW - GAP * (row.length - 1) - used;
+          } else {
+            w = h * ars[j];
+          }
+          used += w;
+          row[j].style.width = w + 'px';
+          row[j].style.height = h + 'px';
+        }
+      }
+      mosaic.classList.add('is-packed');
+    }
+
+    function packAll() {
+      var mosaics = document.querySelectorAll('[data-mosaic]');
+      for (var i = 0; i < mosaics.length; i++) pack(mosaics[i]);
+    }
+
+    window.packMosaic = packAll;
+
+    function bindFilters() {
+      var group = document.querySelector('[data-filter-group="photos"]');
+      if (!group || group.dataset.bound === '1') return;
+      group.dataset.bound = '1';
+      var buttons = group.querySelectorAll('button[data-filter]');
+      group.addEventListener('click', function (event) {
+        var btn = event.target.closest('button[data-filter]');
+        if (!btn) return;
+        var value = btn.getAttribute('data-filter');
+        buttons.forEach(function (b) {
+          b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        var tiles = document.querySelectorAll('[data-mosaic] [data-album]');
+        tiles.forEach(function (el) {
+          var show = value === 'all' || el.getAttribute('data-album') === value;
+          el.classList.toggle('is-hidden', !show);
+        });
+        packAll();
+      });
+    }
+
+    function onReady() {
+      packAll();
+      bindFilters();
+      var imgs = document.querySelectorAll('[data-mosaic] img');
+      for (var i = 0; i < imgs.length; i++) {
+        if (!imgs[i].complete) {
+          imgs[i].addEventListener('load', packAll);
+        }
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', onReady);
+    } else {
+      onReady();
+    }
+
+    var t;
+    window.addEventListener('resize', function () {
+      clearTimeout(t);
+      t = setTimeout(packAll, 40);
+    });
+  })();
+</script>

@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { url, photoSrc } from '../../lib/site';
+import { formatDate } from '../../lib/dates';
+
+const entries = (await getCollection('socials')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<Base title="Socials / Contact" description="Socials and contact.">
+  <div class="wrap">
+    <p class="page-kicker">Socials / Contact</p>
+    <h1 class="page-title">Socials / Contact</h1>
+    <ul class="meme-grid">
+      {
+        entries.map((entry) => (
+          <li>
+            <a href={url(`socials/${entry.id}/`)} class="meme-card">
+              <img
+                src={photoSrc(entry.data.image)}
+                alt={entry.data.alt}
+                loading="lazy"
+              />
+              <div class="meme-card-meta">
+                <h2>{entry.data.title}</h2>
+                <time datetime={entry.data.date.toISOString()}>
+                  {formatDate(entry.data.date)}
+                </time>
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Base>

@@ -1,0 +1,85 @@
+---
+import { url } from '../lib/site';
+
+const path = Astro.url.pathname;
+const base = import.meta.env.BASE_URL || '/';
+
+function current(href: string): boolean {
+  const normalized = path.replace(/\/+$/, '') || '/';
+  const target = href.replace(/\/+$/, '') || '/';
+  if (target === (base.replace(/\/+$/, '') || '/')) {
+    return normalized === target || normalized === '' || normalized === '/';
+  }
+  return normalized === target || normalized.startsWith(`${target}/`);
+}
+
+const home = url('');
+const photos = url('photos/');
+const writing = url('writing/');
+const memes = url('memes/');
+const socials = url('socials/');
+const archive = url('archive/');
+---
+
+<header class="header">
+  <div class="header-inner">
+    <button
+      type="button"
+      class="theme-toggle"
+      id="theme-toggle"
+      aria-label="Switch to light theme"
+    >
+      Light
+    </button>
+    <a class="wordmark" href={home}>Jakob Musk</a>
+    <nav class="nav" aria-label="Primary">
+      <div class="nav-row">
+        <a href={home} aria-current={current(home) ? 'page' : undefined}>Home</a>
+        <a href={photos} aria-current={current(photos) ? 'page' : undefined}>Images</a>
+        <a href={writing} aria-current={current(writing) ? 'page' : undefined}>Writing</a>
+        <a href={memes} aria-current={current(memes) ? 'page' : undefined}>Memes</a>
+      </div>
+      <div class="nav-row">
+        <a href={socials} aria-current={current(socials) ? 'page' : undefined}>Socials / Contact</a>
+        <a href={archive} aria-current={current(archive) ? 'page' : undefined}>Archive</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script is:inline>
+  (function () {
+    var KEY = 'theme';
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function currentTheme() {
+      var t = document.documentElement.getAttribute('data-theme');
+      return t === 'light' ? 'light' : 'dark';
+    }
+
+    function syncButton(theme) {
+      var next = theme === 'dark' ? 'light' : 'dark';
+      var label = next === 'light' ? 'Light' : 'Dark';
+      btn.textContent = label;
+      btn.setAttribute('aria-label', 'Switch to ' + next + ' theme');
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+    }
+
+    function apply(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      try {
+        localStorage.setItem(KEY, theme);
+      } catch (e) {}
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute('content', theme === 'light' ? '#ffffff' : '#0a0a0a');
+      syncButton(theme);
+    }
+
+    syncButton(currentTheme());
+
+    btn.addEventListener('click', function () {
+      apply(currentTheme() === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>

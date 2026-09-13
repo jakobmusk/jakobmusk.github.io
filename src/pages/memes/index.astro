@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { url, photoSrc } from '../../lib/site';
+import { formatDate } from '../../lib/dates';
+
+const memes = (await getCollection('memes')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<Base title="Memes" description="Comics and memes by Jakob Musk.">
+  <div class="wrap">
+    <p class="page-kicker">Memes</p>
+    <h1 class="page-title">Memes</h1>
+
+    <ul class="meme-grid">
+      {
+        memes.map((meme) => (
+          <li>
+            <a href={url(`memes/${meme.id}/`)} class="meme-card">
+              <img
+                src={photoSrc(meme.data.image)}
+                alt={meme.data.alt}
+                loading="lazy"
+              />
+              <div class="meme-card-meta">
+                <h2>{meme.data.title}</h2>
+                <time datetime={meme.data.date.toISOString()}>
+                  {formatDate(meme.data.date)}
+                </time>
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Base>

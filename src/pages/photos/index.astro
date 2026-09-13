@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Mosaic from '../../components/Mosaic.astro';
+
+const photos = (await getCollection('photos')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const albums = ['Places', 'People', 'Odds & ends'] as const;
+---
+
+<Base title="Images" description="Images by Jakob Musk." flush>
+  <div class="photos-head">
+    <h1 class="photos-title">Images</h1>
+    <div class="filters" data-filter-group="photos">
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      {albums.map((album) => (
+        <button type="button" data-filter={album} aria-pressed="false">
+          {album}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <Mosaic photos={photos} />
+</Base>

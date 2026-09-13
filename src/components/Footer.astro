@@ -1,0 +1,14 @@
+---
+import { url } from '../lib/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span>Jakob Musk</span>
+    <span>
+      <a href={url('archive/')}>Archive</a>
+      · {year}
+    </span>
+  </div>
+</footer>
