@@ -1,51 +1,28 @@
-/* Jakob Musk — photo-mosaic life-archive (dark default + light toggle) */
+/* Jakob Musk — photo-mosaic life-archive (single theme; bg matched to Abstract VC jobs) */
 
 :root {
-  /* Shared layout / type (theme-independent) */
-  --display: "Cormorant Garamond", "Palatino Linotype", Palatino, "Times New Roman", Times, serif;
+  color-scheme: light;
+  /* Body/UI: free Söhne stand-in. Wordmark: Playfair Display (Didone / Didot-Bodoni). */
+  --display: "Inter Variable", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
   --sans: "Inter Variable", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --wordmark: "Playfair Display", "Times New Roman", Times, serif;
 
   --gutter: clamp(1.1rem, 3vw, 2.25rem);
   --measure: 36rem;
   --wide: 52rem;
   --header-h: 5.4rem;
-  --tile-gap: 4px;
+  --tile-gap: 2px;
   --mosaic-inset: 14px;
 
-  /* Dark default (quiet OLED-friendly) */
-  --bg: #0a0a0a;
-  --bg-2: #111111;
-  --fg: #f2f2f2;
-  --fg-2: #e4e4e4;
-  --mute: #9a9a9a;
-  --line: #2a2a2a;
-  --focus: #f2f2f2;
-  --gutter-line: #1c1c1c;
-}
-
-:root,
-[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #0a0a0a;
-  --bg-2: #111111;
-  --fg: #f2f2f2;
-  --fg-2: #e4e4e4;
-  --mute: #9a9a9a;
-  --line: #2a2a2a;
-  --focus: #f2f2f2;
-  --gutter-line: #1c1c1c;
-}
-
-[data-theme="light"] {
-  color-scheme: light;
-  --bg: #ffffff;
-  --bg-2: #f4f4f4;
-  --fg: #111111;
+  /* Page canvas #CBCAC6 from jobs.abstractvc.com (--background-primary) */
+  --bg: #CBCAC6;
+  --bg-2: #D4D4D1;
+  --fg: #141414;
   --fg-2: #222222;
-  --mute: #6b6b6b;
-  --line: #e8e8e8;
-  --focus: #111111;
-  --gutter-line: #ffffff;
+  --mute: #5c5c5c;
+  --line: #B8B8B8;
+  --focus: #141414;
+  --gutter-line: #CBCAC6;
 }
 
 *,
@@ -144,7 +121,7 @@ button:focus-visible {
   padding-inline: var(--gutter);
 }
 
-/* ——— Header: thin bar, name centered, nav + theme toggle right ——— */
+/* ——— Header: thin bar, name centered, nav right ——— */
 
 .header {
   position: sticky;
@@ -166,23 +143,29 @@ button:focus-visible {
   gap: 0.75rem 1rem;
 }
 
+.header-spacer {
+  grid-column: 1;
+  justify-self: start;
+}
+
 .wordmark {
   grid-column: 2;
   justify-self: center;
-  font-family: var(--display);
-  font-size: clamp(0.95rem, 1.55vw, 1.15rem);
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
-  color: var(--fg);
+  font-family: var(--wordmark);
+  font-weight: 400;
+  font-size: clamp(1.0375rem, 1.94vw, 1.4375rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   line-height: 1;
+  color: var(--fg);
   white-space: nowrap;
 }
 
 .wordmark:hover {
   text-decoration: none;
-  color: var(--fg);
   opacity: 0.55;
 }
 
@@ -221,26 +204,6 @@ button:focus-visible {
   opacity: 0.45;
 }
 
-.theme-toggle {
-  grid-column: 1;
-  justify-self: start;
-  appearance: none;
-  border: 0;
-  background: transparent;
-  font-family: var(--sans);
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--fg);
-  padding: 0.2rem 0;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.theme-toggle:hover {
-  opacity: 0.45;
-}
 
 @media (max-width: 800px) {
   :root { --header-h: auto; }
@@ -256,8 +219,11 @@ button:focus-visible {
     gap: 0.7rem;
   }
 
+  .header-spacer {
+    display: none;
+  }
+
   .wordmark,
-  .theme-toggle,
   .nav {
     grid-column: 1;
     justify-self: center;
@@ -318,11 +284,11 @@ body.is-flush .footer {
 }
 
 .page-title {
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: clamp(1.7rem, 4vw, 2.35rem);
-  line-height: 1.15;
-  letter-spacing: 0.01em;
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   color: var(--fg);
   margin: 0 0 0.7rem;
 }
@@ -355,7 +321,7 @@ body.is-flush main {
   gap: var(--tile-gap);
   width: 100%;
   overflow-x: hidden;
-  /* Gutters show page bg; slight hairline contrast vs pure black */
+  /* Gutters show page bg */
   background: var(--gutter-line);
 }
 
@@ -413,11 +379,11 @@ body.is-flush main {
 }
 
 .photos-title {
-  font-family: var(--display);
-  font-size: 1.42rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
+  font-family: var(--sans);
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
   margin: 0;
   color: var(--fg);
   text-transform: none;
@@ -658,10 +624,10 @@ body.is-flush .filters {
 }
 
 .writing-list h2 {
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: 1.35rem;
-  letter-spacing: 0.01em;
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
   margin: 0;
   color: var(--fg);
 }

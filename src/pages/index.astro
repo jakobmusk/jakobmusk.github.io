@@ -11,6 +11,6 @@ const photos = (await getCollection('photos')).sort(
 <Base description="Pictures, notes, and an archive. Jakob Musk's place on the web.">
   <h1 class="sr-only">Jakob Musk</h1>
   <section aria-label="Photographs">
-    <Mosaic photos={photos} eager={4} />
+    <Mosaic photos={photos} eager={4} shuffle />
   </section>
 </Base>

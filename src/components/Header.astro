@@ -23,14 +23,7 @@ const archive = url('archive/');
 
 <header class="header">
   <div class="header-inner">
-    <button
-      type="button"
-      class="theme-toggle"
-      id="theme-toggle"
-      aria-label="Switch to light theme"
-    >
-      Light
-    </button>
+    <span class="header-spacer" aria-hidden="true"></span>
     <a class="wordmark" href={home}>Jakob Musk</a>
     <nav class="nav" aria-label="Primary">
       <div class="nav-row">
@@ -40,46 +33,9 @@ const archive = url('archive/');
         <a href={memes} aria-current={current(memes) ? 'page' : undefined}>Memes</a>
       </div>
       <div class="nav-row">
-        <a href={socials} aria-current={current(socials) ? 'page' : undefined}>Socials / Contact</a>
+        <a href={socials} aria-current={current(socials) ? 'page' : undefined}>Contact</a>
         <a href={archive} aria-current={current(archive) ? 'page' : undefined}>Archive</a>
       </div>
     </nav>
   </div>
 </header>
-
-<script is:inline>
-  (function () {
-    var KEY = 'theme';
-    var btn = document.getElementById('theme-toggle');
-    if (!btn) return;
-
-    function currentTheme() {
-      var t = document.documentElement.getAttribute('data-theme');
-      return t === 'light' ? 'light' : 'dark';
-    }
-
-    function syncButton(theme) {
-      var next = theme === 'dark' ? 'light' : 'dark';
-      var label = next === 'light' ? 'Light' : 'Dark';
-      btn.textContent = label;
-      btn.setAttribute('aria-label', 'Switch to ' + next + ' theme');
-      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
-    }
-
-    function apply(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      try {
-        localStorage.setItem(KEY, theme);
-      } catch (e) {}
-      var m = document.querySelector('meta[name="theme-color"]');
-      if (m) m.setAttribute('content', theme === 'light' ? '#ffffff' : '#0a0a0a');
-      syncButton(theme);
-    }
-
-    syncButton(currentTheme());
-
-    btn.addEventListener('click', function () {
-      apply(currentTheme() === 'dark' ? 'light' : 'dark');
-    });
-  })();
-</script>

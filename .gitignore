@@ -7,3 +7,6 @@ dist/
 .env.*
 *token*
 gen_photos.py
+
+# Local typefaces (not for public git)
+public/fonts/sohne/

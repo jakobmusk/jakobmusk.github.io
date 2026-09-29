@@ -6,12 +6,14 @@ import { probeImage } from '../lib/image-size';
 interface Props {
   photos: CollectionEntry<'photos'>[];
   eager?: number;
+  /** Client-side Fisher–Yates shuffle of tiles (Home only; safe for static hosting). */
+  shuffle?: boolean;
 }
 
-const { photos, eager = 0 } = Astro.props;
+const { photos, eager = 0, shuffle = false } = Astro.props;
 ---
 
-<div class="mosaic" data-mosaic>
+<div class="mosaic" data-mosaic data-shuffle={shuffle ? '' : undefined}>
   {
     photos.map((photo, i) => {
       const dim = probeImage(photo.data.image);
@@ -40,7 +42,7 @@ const { photos, eager = 0 } = Astro.props;
 
 <script is:inline>
   (function () {
-    var GAP = 4;
+    var GAP = 2;
     var PACK_MQ = 880;
     var PACK_MQ_2 = 540;
 
@@ -62,6 +64,32 @@ const { photos, eager = 0 } = Astro.props;
         return img.naturalWidth / img.naturalHeight;
       }
       return 1.5;
+    }
+
+    /** Fisher–Yates: reshuffle mosaic children once per load (Home). */
+    function shuffleMosaic(mosaic) {
+      if (!mosaic.hasAttribute('data-shuffle')) return;
+      if (mosaic.dataset.shuffled === '1') return;
+      mosaic.dataset.shuffled = '1';
+      var items = [];
+      var children = mosaic.children;
+      for (var i = 0; i < children.length; i++) {
+        if (children[i].tagName === 'A') items.push(children[i]);
+      }
+      for (var i = items.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = items[i];
+        items[i] = items[j];
+        items[j] = tmp;
+      }
+      for (var i = 0; i < items.length; i++) {
+        mosaic.appendChild(items[i]);
+      }
+    }
+
+    function shuffleAll() {
+      var mosaics = document.querySelectorAll('[data-mosaic][data-shuffle]');
+      for (var i = 0; i < mosaics.length; i++) shuffleMosaic(mosaics[i]);
     }
 
     function pack(root) {
@@ -144,6 +172,7 @@ const { photos, eager = 0 } = Astro.props;
     }
 
     function onReady() {
+      shuffleAll();
       packAll();
       bindFilters();
       var imgs = document.querySelectorAll('[data-mosaic] img');
