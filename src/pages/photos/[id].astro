@@ -5,22 +5,27 @@ import { url, photoSrc } from '../../lib/site';
 import { formatDate } from '../../lib/dates';
 
 export async function getStaticPaths() {
-  const photos = (await getCollection('photos')).sort(
+  const all = (await getCollection('photos')).sort(
     (a, b) => b.data.date.getTime() - a.data.date.getTime(),
   );
+  // Prev/next follow Images listing order (exclude showInImages: false).
+  const listed = all.filter((p) => p.data.showInImages !== false);
 
-  return photos.map((photo, index) => {
-    const prev = index > 0 ? photos[index - 1] : null;
-    const next = index < photos.length - 1 ? photos[index + 1] : null;
+  return all.map((photo) => {
+    const listedIndex = listed.findIndex((p) => p.id === photo.id);
+    const inListing = listedIndex >= 0;
+    const prevPhoto = inListing && listedIndex > 0 ? listed[listedIndex - 1] : null;
+    const nextPhoto =
+      inListing && listedIndex < listed.length - 1 ? listed[listedIndex + 1] : null;
     return {
       params: { id: photo.id },
       props: {
         photo,
-        prev: prev
-          ? { id: prev.id, title: prev.data.title }
+        prev: prevPhoto
+          ? { id: prevPhoto.id, title: prevPhoto.data.title }
           : null,
-        next: next
-          ? { id: next.id, title: next.data.title }
+        next: nextPhoto
+          ? { id: nextPhoto.id, title: nextPhoto.data.title }
           : null,
       },
     };

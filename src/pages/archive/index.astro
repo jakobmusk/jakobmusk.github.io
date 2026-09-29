@@ -17,6 +17,8 @@ type Row = {
   type: 'photo' | 'note' | 'meme' | 'misc';
   kindLabel: string;
   href?: string;
+  /** Thumb link when different from title href (e.g. archive fragment with attached photo). */
+  imageHref?: string;
   excerpt?: string;
   image?: string;
   alt?: string;
@@ -27,6 +29,7 @@ type Row = {
 const rows: Row[] = [];
 
 for (const p of photos) {
+  if (p.data.showInArchive === false) continue;
   rows.push({
     id: `photo-${p.id}`,
     date: p.data.date,
@@ -68,6 +71,12 @@ for (const m of memes) {
 
 for (const m of misc) {
   const { Content } = await render(m);
+  // Attached public/photos/<slug>.ext → thumb links to that photo detail page.
+  let imageHref: string | undefined;
+  if (m.data.image && m.data.linkImage !== false) {
+    const match = m.data.image.match(/^photos\/([^/]+)\.\w+$/);
+    if (match) imageHref = url(`photos/${match[1]}/`);
+  }
   rows.push({
     id: `misc-${m.id}`,
     date: m.data.date,
@@ -77,6 +86,9 @@ for (const m of misc) {
     excerpt: undefined,
     rendered: Content,
     external: m.data.url,
+    image: m.data.image,
+    alt: m.data.alt,
+    imageHref,
   });
 }
 
@@ -102,34 +114,43 @@ rows.sort((a, b) => b.date.getTime() - a.date.getTime());
 
     <ol class="archive-list">
       {
-        rows.map((row) => (
-          <li class="archive-item" data-type={row.type}>
-            <time datetime={row.date.toISOString()}>{formatDate(row.date)}</time>
-            <span class="kind">{row.kindLabel}</span>
-            <div>
-              <h2>
-                {row.href ? (
-                  <a href={row.href}>{row.title}</a>
-                ) : row.external ? (
-                  <a href={row.external} rel="noopener noreferrer">{row.title}</a>
-                ) : (
-                  row.title
+        rows.map((row) => {
+          const thumbHref = row.imageHref || row.href;
+          return (
+            <li class="archive-item" data-type={row.type}>
+              <time datetime={row.date.toISOString()}>{formatDate(row.date)}</time>
+              <span class="kind">{row.kindLabel}</span>
+              <div>
+                <h2>
+                  {row.href ? (
+                    <a href={row.href}>{row.title}</a>
+                  ) : row.external ? (
+                    <a href={row.external} rel="noopener noreferrer">{row.title}</a>
+                  ) : (
+                    row.title
+                  )}
+                </h2>
+                {row.excerpt && <div class="body"><p>{row.excerpt}</p></div>}
+                {row.rendered && (
+                  <div class="body">
+                    <Md Content={row.rendered} />
+                  </div>
                 )}
-              </h2>
-              {row.excerpt && <div class="body"><p>{row.excerpt}</p></div>}
-              {row.rendered && (
-                <div class="body">
-                  <Md Content={row.rendered} />
-                </div>
-              )}
-              {row.image && (
-                <a href={row.href} class="archive-thumb">
-                  <img src={photoSrc(row.image)} alt={row.alt || ''} loading="lazy" />
-                </a>
-              )}
-            </div>
-          </li>
-        ))
+                {row.image && (
+                  thumbHref ? (
+                    <a href={thumbHref} class="archive-thumb">
+                      <img src={photoSrc(row.image)} alt={row.alt || ''} loading="lazy" />
+                    </a>
+                  ) : (
+                    <div class="archive-thumb">
+                      <img src={photoSrc(row.image)} alt={row.alt || ''} loading="lazy" />
+                    </div>
+                  )
+                )}
+              </div>
+            </li>
+          );
+        })
       }
     </ol>
   </div>

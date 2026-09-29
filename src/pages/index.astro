@@ -3,9 +3,9 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Mosaic from '../components/Mosaic.astro';
 
-const photos = (await getCollection('photos')).sort(
-  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
-);
+const photos = (await getCollection('photos'))
+  .filter((p) => p.data.showOnHome !== false)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
 <Base description="Pictures, notes, and an archive. Jakob Musk's place on the web.">

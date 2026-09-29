@@ -10,6 +10,12 @@ const photos = defineCollection({
     album: z.enum(['Places', 'People', 'Odds & ends']),
     image: z.string(),
     alt: z.string(),
+    /** When false, omit from Home mosaic. Detail URL can remain. Default true. */
+    showOnHome: z.boolean().optional().default(true),
+    /** When false, omit from Images listing and Images prev/next. Default true. */
+    showInImages: z.boolean().optional().default(true),
+    /** When false, omit from the chronological Archive. Default true. */
+    showInArchive: z.boolean().optional().default(true),
   }),
 });
 
@@ -29,6 +35,11 @@ const archive = defineCollection({
     date: z.coerce.date(),
     kind: z.enum(['link', 'list', 'fragment', 'note']),
     url: z.string().url().optional(),
+    /** Optional attached image under public/ (e.g. photos/foo.jpg). Reuse existing assets. */
+    image: z.string().optional(),
+    alt: z.string().optional(),
+    /** When false, an attached image remains a plain, non-navigating thumb. Default true. */
+    linkImage: z.boolean().optional().default(true),
   }),
 });
 
