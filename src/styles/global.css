@@ -176,6 +176,7 @@ button:focus-visible {
   background: transparent;
   display: inline-flex;
   align-items: center;
+  gap: 0.4em;
   font-family: var(--sans);
   font-size: 0.6rem;
   font-weight: 500;
@@ -185,6 +186,32 @@ button:focus-visible {
   padding: 0.2rem 0;
   cursor: pointer;
   line-height: 1;
+  opacity: 0.9;
+}
+
+.theme-toggle-label {
+  display: inline-block;
+  transform: rotate(180deg);
+}
+
+.theme-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95em;
+  height: 0.95em;
+  flex-shrink: 0;
+}
+
+.theme-icon {
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+
+.theme-toggle[data-next="light"] .theme-icon-sun,
+.theme-toggle[data-next="dark"] .theme-icon-moon {
+  display: block;
 }
 
 .theme-toggle:hover {

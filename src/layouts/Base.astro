@@ -46,8 +46,10 @@ const bodyClass = [isHome && 'is-home', flush && 'is-flush'].filter(Boolean).joi
     <meta name="color-scheme" content="dark light" />
     <script is:inline>
       try {
-        var t = localStorage.getItem('theme');
+        var localPreview = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        var t = localPreview ? 'light' : localStorage.getItem('theme');
         if (t !== 'light' && t !== 'dark') t = 'dark';
+        if (localPreview) localStorage.setItem('theme', 'light');
         document.documentElement.setAttribute('data-theme', t);
         var m = document.querySelector('meta[name="theme-color"]');
         if (m) m.setAttribute('content', t === 'light' ? '#D4D4D2' : '#0a0a0a');
