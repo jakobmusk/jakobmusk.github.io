@@ -6,6 +6,7 @@ import '@fontsource/playfair-display/500.css';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import WipOverlay from '../components/WipOverlay.astro';
 import { siteName, url } from '../lib/site';
 
 interface Props {
@@ -68,5 +69,6 @@ const bodyClass = [isHome && 'is-home', flush && 'is-flush'].filter(Boolean).joi
       </main>
       <Footer />
     </div>
+    <WipOverlay />
   </body>
 </html>
