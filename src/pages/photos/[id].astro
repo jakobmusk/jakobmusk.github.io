@@ -5,25 +5,71 @@ import { url, photoSrc } from '../../lib/site';
 import { formatDate } from '../../lib/dates';
 
 export async function getStaticPaths() {
-  const photos = await getCollection('photos');
-  return photos.map((photo) => ({
-    params: { id: photo.id },
-    props: { photo },
-  }));
+  const photos = (await getCollection('photos')).sort(
+    (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+  );
+
+  return photos.map((photo, index) => {
+    const prev = index > 0 ? photos[index - 1] : null;
+    const next = index < photos.length - 1 ? photos[index + 1] : null;
+    return {
+      params: { id: photo.id },
+      props: {
+        photo,
+        prev: prev
+          ? { id: prev.id, title: prev.data.title }
+          : null,
+        next: next
+          ? { id: next.id, title: next.data.title }
+          : null,
+      },
+    };
+  });
 }
 
-const { photo } = Astro.props;
+const { photo, prev, next } = Astro.props;
 const { Content } = await render(photo);
+const prevHref = prev ? url(`photos/${prev.id}/`) : '';
+const nextHref = next ? url(`photos/${next.id}/`) : '';
 ---
 
 <Base title={photo.data.title} description={photo.data.caption}>
   <a class="back" href={url('photos/')}>Images</a>
   <article class="photo-stage">
-    <div class="frame">
+    <div
+      class="frame"
+      data-photo-nav
+      data-prev={prevHref || undefined}
+      data-next={nextHref || undefined}
+    >
       <img
         src={photoSrc(photo.data.image)}
         alt={photo.data.alt}
       />
+      {
+        prev && (
+          <a
+            class="photo-nav photo-nav-prev"
+            href={prevHref}
+            aria-label={`Previous: ${prev.title}`}
+            title={prev.title}
+          >
+            <span aria-hidden="true">‹</span>
+          </a>
+        )
+      }
+      {
+        next && (
+          <a
+            class="photo-nav photo-nav-next"
+            href={nextHref}
+            aria-label={`Next: ${next.title}`}
+            title={next.title}
+          >
+            <span aria-hidden="true">›</span>
+          </a>
+        )
+      }
     </div>
     <div class="photo-meta">
       <h1>{photo.data.title}</h1>
@@ -37,4 +83,26 @@ const { Content } = await render(photo);
       </div>
     </div>
   </article>
+
+  <script is:inline>
+    (function () {
+      var frame = document.querySelector('[data-photo-nav]');
+      if (!frame) return;
+      var prevHref = frame.getAttribute('data-prev');
+      var nextHref = frame.getAttribute('data-next');
+      if (!prevHref && !nextHref) return;
+      document.addEventListener('keydown', function (e) {
+        if (e.defaultPrevented) return;
+        var t = e.target;
+        var tag = (t && t.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if (t && t.isContentEditable) return;
+        if (e.key === 'ArrowLeft' && prevHref) {
+          window.location.href = prevHref;
+        } else if (e.key === 'ArrowRight' && nextHref) {
+          window.location.href = nextHref;
+        }
+      });
+    })();
+  </script>
 </Base>

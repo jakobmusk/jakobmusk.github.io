@@ -23,7 +23,15 @@ const archive = url('archive/');
 
 <header class="header">
   <div class="header-inner">
-    <span class="header-spacer" aria-hidden="true"></span>
+    <button
+      type="button"
+      class="theme-toggle"
+      id="theme-toggle"
+      data-next="light"
+      aria-label="Switch to light theme"
+    >
+      <span id="theme-toggle-label">Light</span>
+    </button>
     <a class="wordmark" href={home}>Jakob Musk</a>
     <nav class="nav" aria-label="Primary">
       <div class="nav-row">
@@ -39,3 +47,42 @@ const archive = url('archive/');
     </nav>
   </div>
 </header>
+
+<script is:inline>
+  (function () {
+    var KEY = 'theme';
+    var btn = document.getElementById('theme-toggle');
+    var labelEl = document.getElementById('theme-toggle-label');
+    if (!btn || !labelEl) return;
+
+    function currentTheme() {
+      var t = document.documentElement.getAttribute('data-theme');
+      return t === 'light' ? 'light' : 'dark';
+    }
+
+    function syncButton(theme) {
+      var next = theme === 'dark' ? 'light' : 'dark';
+      var label = next === 'light' ? 'Light' : 'Dark';
+      labelEl.textContent = label;
+      btn.setAttribute('data-next', next);
+      btn.setAttribute('aria-label', 'Switch to ' + next + ' theme');
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+    }
+
+    function apply(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      try {
+        localStorage.setItem(KEY, theme);
+      } catch (e) {}
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute('content', theme === 'light' ? '#D4D4D2' : '#0a0a0a');
+      syncButton(theme);
+    }
+
+    syncButton(currentTheme());
+
+    btn.addEventListener('click', function () {
+      apply(currentTheme() === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>

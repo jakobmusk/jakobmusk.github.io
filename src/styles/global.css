@@ -1,7 +1,6 @@
-/* Jakob Musk — photo-mosaic life-archive (single theme; bg matched to Abstract VC jobs) */
+/* Jakob Musk — photo-mosaic life-archive (dark default + light toggle) */
 
 :root {
-  color-scheme: light;
   /* Body/UI: free Söhne stand-in. Wordmark: Playfair Display (Didone / Didot-Bodoni). */
   --display: "Inter Variable", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
   --sans: "Inter Variable", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -14,15 +13,41 @@
   --tile-gap: 2px;
   --mosaic-inset: 14px;
 
-  /* Page canvas #CBCAC6 from jobs.abstractvc.com (--background-primary) */
-  --bg: #CBCAC6;
-  --bg-2: #D4D4D1;
+  /* Dark default (quiet OLED-friendly) */
+  --bg: #0a0a0a;
+  --bg-2: #111111;
+  --fg: #f2f2f2;
+  --fg-2: #e4e4e4;
+  --mute: #9a9a9a;
+  --line: #2a2a2a;
+  --focus: #f2f2f2;
+  --gutter-line: #1c1c1c;
+}
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0a0a;
+  --bg-2: #111111;
+  --fg: #f2f2f2;
+  --fg-2: #e4e4e4;
+  --mute: #9a9a9a;
+  --line: #2a2a2a;
+  --focus: #f2f2f2;
+  --gutter-line: #1c1c1c;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  /* Primary canvas from Jakob's swatch */
+  --bg: #D4D4D2;
+  --bg-2: #E2E2E0;
   --fg: #141414;
   --fg-2: #222222;
   --mute: #5c5c5c;
-  --line: #B8B8B8;
+  --line: #B8B8B6;
   --focus: #141414;
-  --gutter-line: #CBCAC6;
+  --gutter-line: #D4D4D2;
 }
 
 *,
@@ -121,7 +146,7 @@ button:focus-visible {
   padding-inline: var(--gutter);
 }
 
-/* ——— Header: thin bar, name centered, nav right ——— */
+/* ——— Header: thin bar, name centered, nav + theme toggle ——— */
 
 .header {
   position: sticky;
@@ -143,9 +168,27 @@ button:focus-visible {
   gap: 0.75rem 1rem;
 }
 
-.header-spacer {
+.theme-toggle {
   grid-column: 1;
   justify-self: start;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg);
+  padding: 0.2rem 0;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  opacity: 0.45;
 }
 
 .wordmark {
@@ -219,11 +262,8 @@ button:focus-visible {
     gap: 0.7rem;
   }
 
-  .header-spacer {
-    display: none;
-  }
-
   .wordmark,
+  .theme-toggle,
   .nav {
     grid-column: 1;
     justify-self: center;
@@ -469,6 +509,7 @@ body.is-flush .filters {
 }
 
 .photo-stage .frame {
+  position: relative;
   background: var(--bg);
   display: flex;
   justify-content: center;
@@ -482,6 +523,75 @@ body.is-flush .filters {
   height: auto;
   margin-inline: auto;
   object-fit: contain;
+}
+
+.photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--fg);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+  opacity: 0.55;
+  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.photo-nav span {
+  font-size: 1.65rem;
+  line-height: 1;
+  font-weight: 400;
+  margin-top: -0.08em;
+}
+
+.photo-nav:hover,
+.photo-nav:focus-visible {
+  opacity: 1;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border-color: color-mix(in srgb, var(--fg) 35%, transparent);
+  outline: none;
+}
+
+.photo-nav-prev {
+  left: clamp(0.4rem, 1.8vw, 1rem);
+}
+
+.photo-nav-next {
+  right: clamp(0.4rem, 1.8vw, 1rem);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .photo-stage .frame .photo-nav {
+    opacity: 0;
+  }
+  .photo-stage .frame:hover .photo-nav,
+  .photo-stage .frame:focus-within .photo-nav {
+    opacity: 0.7;
+  }
+  .photo-stage .frame:hover .photo-nav:hover,
+  .photo-stage .frame .photo-nav:focus-visible {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .photo-nav {
+    width: 2.35rem;
+    height: 2.35rem;
+    opacity: 0.7;
+  }
+  .photo-nav span {
+    font-size: 1.4rem;
+  }
 }
 
 .photo-meta {
